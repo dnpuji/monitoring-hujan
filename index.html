@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spraying Loss Tracker - Merauke</title>
+    <title>Spraying Loss Tracker v9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -12,7 +12,6 @@
         .active-radio:checked + span { background-color: #1d4ed8; color: white; border-color: #1d4ed8; }
         .tab-active { background-color: #1d4ed8 !important; color: white !important; font-weight: 900; }
         .rekap-active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: 900; }
-        .timer-glow { text-shadow: 0 0 10px rgba(30, 64, 175, 0.3); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen p-3 font-sans pb-10">
@@ -20,12 +19,12 @@
     <div class="max-w-md mx-auto bg-white rounded-[2.5rem] shadow-2xl border-t-[12px] border-blue-700 overflow-hidden">
         
         <div class="p-6 pb-2 text-center">
-            <h2 class="text-xl font-black text-blue-900 uppercase tracking-tighter">Spraying Productivity Loss</h2>
-            <p class="text-[8px] text-slate-400 font-bold tracking-[0.4em] mt-1 uppercase italic">Analisis Penyebab Low Output</p>
+            <h2 class="text-xl font-black text-blue-900 uppercase tracking-tighter">Spraying Loss Tracker</h2>
+            <p class="text-[8px] text-slate-400 font-bold tracking-[0.4em] mt-1 uppercase italic">Analisis Low Productivity - Merauke</p>
             
             <div class="grid grid-cols-2 gap-2 mt-6">
-                <input type="text" id="petugas" oninput="saveName()" class="bg-slate-100 border-2 border-transparent focus:border-blue-500 rounded-xl p-3 font-bold text-xs outline-none transition-all" placeholder="Petugas / Mandor">
-                <input type="text" id="paddock" class="bg-slate-100 border-2 border-transparent focus:border-blue-500 rounded-xl p-3 font-bold text-xs outline-none transition-all" placeholder="No. Paddock">
+                <input type="text" id="petugas" oninput="saveName()" class="bg-slate-100 border-2 border-transparent focus:border-blue-500 rounded-xl p-3 font-bold text-xs outline-none transition-all" placeholder="Petugas">
+                <input type="text" id="paddock" class="bg-slate-100 border-2 border-transparent focus:border-blue-500 rounded-xl p-3 font-bold text-xs outline-none transition-all" placeholder="Paddock">
             </div>
         </div>
 
@@ -37,8 +36,8 @@
             </div>
 
             <div class="bg-blue-50 p-6 rounded-[2rem] border border-blue-100 text-center mb-6 shadow-inner">
-                <p id="timerDisplay" class="text-5xl font-black text-blue-900 font-mono timer-glow">00:00</p>
-                <p id="timerLabel" class="text-[9px] font-bold text-blue-400 uppercase mt-2 tracking-widest italic">Durasi Hujan Saat Spray</p>
+                <p id="timerDisplay" class="text-5xl font-black text-blue-900 font-mono">00:00</p>
+                <p id="timerLabel" class="text-[9px] font-bold text-blue-400 uppercase mt-2 tracking-widest italic">Lama Waktu Hujan Saat Spray</p>
                 
                 <div class="grid grid-cols-2 gap-4 mt-6">
                     <button onclick="startTimer()" id="btnStart" class="bg-emerald-500 text-white py-4 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all">▶ START</button>
@@ -48,9 +47,9 @@
 
             <div id="inputHujan" class="space-y-4">
                 <div class="grid grid-cols-3 gap-2">
-                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Ringan" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase shadow-sm">Ringan</span></label>
-                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Sedang" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase shadow-sm">Sedang</span></label>
-                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Lebat" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase shadow-sm">Lebat</span></label>
+                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Ringan" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Ringan</span></label>
+                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Sedang" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Sedang</span></label>
+                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Lebat" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Lebat</span></label>
                 </div>
             </div>
 
@@ -58,40 +57,32 @@
                 <span class="text-[9px] font-black text-amber-600 uppercase">Kec. Angin (Wind Meter)</span>
                 <div class="flex items-center gap-1">
                     <input type="number" id="windSpeed" step="0.1" class="w-16 bg-white border-b-2 border-amber-500 text-center font-black text-lg outline-none" placeholder="0.0">
-                    <span class="text-[9px] font-bold">m/s</span>
+                    <span class="text-[9px] font-bold">Km/jam</span>
                 </div>
             </div>
 
             <div id="inputTunggu" class="hidden text-center italic text-slate-400 text-[10px] p-2">
-                "Mencatat waktu standby karena awan mendung/prediksi hujan."
+                "Mencatat waktu standby karena prediksi akan hujan."
             </div>
 
-            <button onclick="saveData()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black text-xs mt-6 shadow-xl uppercase tracking-widest active:scale-95 transition-all">Simpan & Reset</button>
+            <button onclick="saveData()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black text-xs mt-6 shadow-xl uppercase tracking-widest active:scale-95 transition-all">Simpan Laporan</button>
         </div>
 
-        <div class="bg-slate-50 border-t border-slate-200 mt-8">
-            <div class="flex text-[9px] font-black uppercase text-slate-400 border-b border-slate-200">
-                <button onclick="switchRekap('hari')" id="rkHari" class="flex-1 py-3 rekap-active">Hari Ini</button>
-                <button onclick="switchRekap('minggu')" id="rkMinggu" class="flex-1 py-3">7 Hari Terakhir</button>
+        <div class="bg-slate-50 border-t border-slate-200 mt-8 p-4 overflow-x-auto">
+            <div class="flex text-[9px] font-black uppercase text-slate-400 border-b mb-3">
+                <button onclick="switchRekap('hari')" id="rkHari" class="flex-1 py-2 rekap-active">Hari Ini</button>
+                <button onclick="switchRekap('minggu')" id="rkMinggu" class="flex-1 py-2">7 Hari</button>
             </div>
-            <div class="p-4 overflow-x-auto">
-                <table class="w-full text-[9px] text-left">
-                    <thead class="text-slate-400 uppercase font-bold border-b border-slate-200">
-                        <tr>
-                            <th class="p-2">Jam</th>
-                            <th class="p-2">Kendala</th>
-                            <th class="p-2">Paddock</th>
-                            <th class="p-2 text-center">Durasi</th>
-                            <th class="p-2 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="font-medium text-slate-700"></tbody>
-                </table>
-            </div>
+            <table class="w-full text-[9px] text-left">
+                <thead class="text-slate-400 uppercase">
+                    <tr><th class="p-2">Kendala</th><th class="p-2">Paddock</th><th class="p-2 text-center">Durasi</th><th class="p-2 text-center">Aksi</th></tr>
+                </thead>
+                <tbody id="tableBody" class="font-medium"></tbody>
+            </table>
         </div>
 
-        <div class="bg-slate-900 p-6 text-center">
-            <button onclick="downloadExcel()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">📂 Download Analisis Produktivitas (.xlsx)</button>
+        <div class="bg-slate-900 p-6">
+            <button onclick="downloadExcel()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">📂 Download Excel (km/jam)</button>
         </div>
     </div>
 
@@ -107,12 +98,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let currentMode = 'hujan';
-        let startTime, timerInterval, rekapTab = 'hari';
+        let currentMode = 'hujan', startTime, timerInterval, rekapTab = 'hari';
 
         window.onload = () => {
-            const saved = localStorage.getItem('namaPetugas');
-            if(saved) document.getElementById('petugas').value = saved;
+            if(localStorage.getItem('namaPetugas')) document.getElementById('petugas').value = localStorage.getItem('namaPetugas');
             renderTable();
         };
 
@@ -123,12 +112,10 @@
             document.getElementById('inputHujan').classList.toggle('hidden', mode !== 'hujan');
             document.getElementById('inputAngin').classList.toggle('hidden', mode !== 'angin');
             document.getElementById('inputTunggu').classList.toggle('hidden', mode !== 'tunggu');
+            ['mHujan','mAngin','mTunggu'].forEach(m => document.getElementById(m).classList.remove('tab-active'));
+            document.getElementById('m' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('tab-active');
             
-            document.getElementById('mHujan').className = mode === 'hujan' ? 'flex-1 py-3 rounded-xl text-[8px] font-black uppercase tab-active' : 'flex-1 py-3 rounded-xl text-[8px] font-black uppercase';
-            document.getElementById('mAngin').className = mode === 'angin' ? 'flex-1 py-3 rounded-xl text-[8px] font-black uppercase tab-active' : 'flex-1 py-3 rounded-xl text-[8px] font-black uppercase';
-            document.getElementById('mTunggu').className = mode === 'tunggu' ? 'flex-1 py-3 rounded-xl text-[8px] font-black uppercase tab-active' : 'flex-1 py-3 rounded-xl text-[8px] font-black uppercase';
-            
-            const labels = { hujan: 'Durasi Hujan Saat Spray', angin: 'Durasi Angin Kencang (> m/s)', tunggu: 'Waktu Menunggu Cuaca' };
+            const labels = { hujan: 'Lama Waktu Hujan Saat Spray', angin: 'Lama Kecepatan Angin Tinggi', tunggu: 'Menunggu Cuaca (Standby)' };
             document.getElementById('timerLabel').innerText = labels[mode];
             resetTimerUI();
         }
@@ -148,7 +135,6 @@
             document.getElementById('btnStart').classList.add('opacity-20');
             document.getElementById('btnStop').disabled = false;
             document.getElementById('btnStop').classList.remove('opacity-20');
-            
             timerInterval = setInterval(() => {
                 const diff = new Date(new Date() - startTime);
                 const m = String(diff.getUTCMinutes()).padStart(2, '0');
@@ -157,73 +143,51 @@
             }, 1000);
         }
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-            document.getElementById('btnStop').disabled = true;
-            document.getElementById('btnStop').classList.add('opacity-20');
-        }
+        function stopTimer() { clearInterval(timerInterval); document.getElementById('btnStop').disabled = true; document.getElementById('btnStop').classList.add('opacity-20'); }
 
         async function saveData() {
             const pet = document.getElementById('petugas').value;
             const pad = document.getElementById('paddock').value;
             const dur = document.getElementById('timerDisplay').innerText;
-            if(!pet || !pad || dur === "00:00") return alert("Lengkapi Identitas & Jalankan Timer!");
+            if(!pet || !pad || dur === "00:00") return alert("Lengkapi data!");
 
             let detail = "";
             if(currentMode === 'hujan') detail = document.querySelector('input[name="ketHujan"]:checked')?.value || "-";
-            if(currentMode === 'angin') detail = (document.getElementById('windSpeed').value || "0") + " m/s";
-            if(currentMode === 'tunggu') detail = "Standby (Mendung)";
+            if(currentMode === 'angin') detail = (document.getElementById('windSpeed').value || "0") + " km/jam";
+            if(currentMode === 'tunggu') detail = "Standby (Akan Hujan)";
 
-            await db.collection("spraying_loss").add({
+            await db.collection("spraying_loss_v9").add({
                 petugas: pet, paddock: pad, durasi: dur, tipe: currentMode, keterangan: detail,
                 tanggal: new Date().toLocaleDateString('id-ID'),
-                jam: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-
-            alert("Data Disimpan!");
-            location.reload();
+            alert("Berhasil!"); location.reload();
         }
 
         function renderTable() {
             const tglSkrg = new Date().toLocaleDateString('id-ID');
-            db.collection("spraying_loss").onSnapshot(snap => {
-                const tbody = document.getElementById('tableBody');
-                tbody.innerHTML = "";
-                let arr = [];
-                snap.forEach(doc => arr.push({id: doc.id, ...doc.data()}));
+            db.collection("spraying_loss_v9").onSnapshot(snap => {
+                const tbody = document.getElementById('tableBody'); tbody.innerHTML = "";
+                let arr = []; snap.forEach(doc => arr.push({id: doc.id, ...doc.data()}));
                 if(rekapTab === 'hari') arr = arr.filter(d => d.tanggal === tglSkrg);
                 arr.sort((a,b) => b.timestamp - a.timestamp);
-
                 arr.forEach(d => {
-                    const icons = { hujan: '🌦️', angin: '💨', tunggu: '⏳' };
-                    tbody.innerHTML += `
-                        <tr class="border-b border-slate-100">
-                            <td class="p-3 text-[8px] opacity-50">${d.jam}</td>
-                            <td class="p-3 font-bold text-[9px]">${icons[d.tipe]} ${d.keterangan}</td>
-                            <td class="p-3 font-black">${d.paddock}</td>
-                            <td class="p-3 text-center font-mono font-black text-blue-700">${d.durasi}</td>
-                            <td class="p-3 text-center"><button onclick="hapus('${d.id}')" class="text-rose-400 font-black px-2">X</button></td>
-                        </tr>`;
+                    const icon = d.tipe === 'hujan' ? '🌦️' : d.tipe === 'angin' ? '💨' : '⏳';
+                    tbody.innerHTML += `<tr class="border-b border-slate-100"><td class="p-3 font-bold">${icon} ${d.keterangan}</td><td class="p-3 font-black">${d.paddock}</td><td class="p-3 text-center font-mono text-blue-700">${d.durasi}</td><td class="p-3 text-center"><button onclick="hapus('${d.id}')" class="text-rose-400">X</button></td></tr>`;
                 });
             });
         }
 
-        async function hapus(id) { if(confirm("Hapus?")) await db.collection("spraying_loss").doc(id).delete(); }
-        function switchRekap(t) { 
-            rekapTab = t; 
-            document.getElementById('rkHari').className = t==='hari' ? 'flex-1 py-3 rekap-active' : 'flex-1 py-3';
-            document.getElementById('rkMinggu').className = t==='minggu' ? 'flex-1 py-3 rekap-active' : 'flex-1 py-3';
-            renderTable(); 
-        }
-
+        async function hapus(id) { if(confirm("Hapus?")) await db.collection("spraying_loss_v9").doc(id).delete(); }
+        function switchRekap(t) { rekapTab = t; document.getElementById('rkHari').className = t==='hari' ? 'flex-1 py-2 rekap-active' : 'flex-1 py-2'; document.getElementById('rkMinggu').className = t==='minggu' ? 'flex-1 py-2 rekap-active' : 'flex-1 py-2'; renderTable(); }
+        
         async function downloadExcel() {
-            const snap = await db.collection("spraying_loss").get();
+            const snap = await db.collection("spraying_loss_v9").get();
             let arr = []; snap.forEach(doc => arr.push(doc.data()));
             const ws = XLSX.utils.json_to_sheet(arr);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Spray_Loss_Report");
-            XLSX.writeFile(wb, "Analisis_Produktivitas_Spray.xlsx");
+            XLSX.writeFile(wb, "Analisis_Spray_Loss_KmJam.xlsx");
         }
     </script>
 </body>
