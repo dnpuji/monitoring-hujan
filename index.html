@@ -10,66 +10,113 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .active-radio:checked + span { background-color: #1d4ed8; color: white; border-color: #1d4ed8; }
+        .tab-active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: 900; }
+        ::-webkit-scrollbar { height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen p-3 font-sans">
+<body class="bg-slate-100 min-h-screen p-3 font-sans pb-10">
 
     <div class="max-w-md mx-auto bg-white rounded-[2.5rem] shadow-2xl border-t-[10px] border-blue-600 overflow-hidden">
-        <div class="p-6">
+        <div class="p-6 pb-2">
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-black text-blue-900">MONITORING HUJAN</h2>
-                <p class="text-[10px] text-slate-400 font-bold tracking-[0.3em] mt-2 uppercase">Sugar Cane Project - Merauke</p>
+                <h2 class="text-2xl font-black text-blue-900 uppercase leading-none tracking-tight">Monitoring Hujan</h2>
+                <p class="text-[9px] text-slate-400 font-bold tracking-[0.3em] mt-2 uppercase">Sugar Cane Project - Merauke</p>
             </div>
 
             <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-blue-500 uppercase ml-2">Petugas</label>
-                    <input type="text" id="petugas" oninput="saveName()" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3 font-bold text-slate-700 outline-none focus:border-blue-400 transition-all" placeholder="Nama Anda...">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[9px] font-bold text-blue-500 uppercase ml-2">Petugas</label>
+                        <input type="text" id="petugas" oninput="saveName()" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 font-bold text-slate-700 text-sm outline-none focus:border-blue-400 transition-all" placeholder="Nama...">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-blue-500 uppercase ml-2">Paddock</label>
+                        <input type="text" id="paddock" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-2.5 font-bold text-slate-700 text-sm outline-none focus:border-blue-400 transition-all" placeholder="Nomor...">
+                    </div>
                 </div>
 
-                <div>
-                    <label class="text-[10px] font-bold text-blue-500 uppercase ml-2">Paddock / Blok</label>
-                    <input type="text" id="paddock" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3 font-bold text-slate-700 outline-none focus:border-blue-400 transition-all" placeholder="Nomor Paddock...">
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <button onclick="startHujan()" id="btnStart" class="bg-emerald-500 text-white p-3.5 rounded-xl font-black shadow-md active:scale-95 transition-all uppercase text-[10px]">Mulai Hujan</button>
+                    <button onclick="stopHujan()" id="btnStop" class="bg-rose-500 text-white p-3.5 rounded-xl font-black shadow-md opacity-20 active:scale-95 transition-all uppercase text-[10px]" disabled>Selesai</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="startHujan()" id="btnStart" class="bg-emerald-500 text-white p-4 rounded-2xl font-black shadow-lg active:scale-95 transition-all uppercase text-xs">Mulai</button>
-                    <button onclick="stopHujan()" id="btnStop" class="bg-rose-500 text-white p-4 rounded-2xl font-black shadow-lg opacity-20 active:scale-95 transition-all uppercase text-xs" disabled>Selesai</button>
-                </div>
-
-                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center shadow-inner font-mono font-black text-blue-800 text-lg">
-                    <span id="displayStart">--:--</span> <span class="text-blue-300">→</span> <span id="displayStop">--:--</span>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center shadow-inner font-mono font-black text-blue-800 text-base">
+                    <span id="displayStart">--:--</span> <span class="text-blue-300 mx-2">→</span> <span id="displayStop">--:--</span>
                 </div>
 
                 <div class="grid grid-cols-3 gap-2">
                     <label class="cursor-pointer">
                         <input type="radio" name="intensitas" value="Ringan" class="hidden active-radio">
-                        <span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase transition-all">Ringan</span>
+                        <span class="block text-center p-2.5 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Ringan</span>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="intensitas" value="Sedang" class="hidden active-radio">
-                        <span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase transition-all">Sedang</span>
+                        <span class="block text-center p-2.5 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Sedang</span>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="intensitas" value="Lebat" class="hidden active-radio">
-                        <span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase transition-all">Lebat</span>
+                        <span class="block text-center p-2.5 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Lebat</span>
                     </label>
                 </div>
 
-                <button onclick="kirimData()" class="w-full bg-blue-700 text-white py-5 rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest text-sm">Simpan Laporan</button>
+                <button onclick="kirimData()" class="w-full bg-blue-700 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all uppercase tracking-widest text-xs">Simpan Data</button>
 
                 <div id="copySection" class="hidden">
-                    <button onclick="copySingle()" class="w-full bg-emerald-50 text-emerald-600 border-2 border-emerald-200 py-3 rounded-xl font-bold text-[10px] uppercase">📋 Salin Laporan Terakhir</button>
+                    <button onclick="copySingle()" class="w-full bg-emerald-50 text-emerald-600 border-2 border-emerald-200 py-2.5 rounded-xl font-bold text-[9px] uppercase">📋 Salin Laporan Terakhir (WA)</button>
                 </div>
             </div>
         </div>
 
-        <div class="bg-slate-900 p-6">
-            <h3 class="text-center text-white text-[10px] font-black tracking-[0.4em] mb-4 opacity-50 uppercase italic underline decoration-blue-500">Panel Control Admin</h3>
-            <div class="space-y-3">
-                <p id="statHariIni" class="text-emerald-400 font-mono text-[9px] text-center mb-2 uppercase font-bold">Menghubungkan Server...</p>
-                <button onclick="copyAllToday()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">📋 SALIN SEMUA DATA HARI INI</button>
-                <button onclick="downloadExcelRange()" class="w-full bg-slate-700 text-slate-300 py-3 rounded-xl text-[10px] font-black border border-slate-600 flex items-center justify-center gap-2">📂 UNDUH EXCEL (FILTER)</button>
+        <div class="bg-slate-50 border-t border-slate-200 mt-6">
+            <div class="flex text-[10px] font-black uppercase text-slate-400 border-b border-slate-200">
+                <button onclick="switchTab('hari')" id="tabHari" class="flex-1 py-3 tab-active">Hari Ini</button>
+                <button onclick="switchTab('minggu')" id="tabMinggu" class="flex-1 py-3">7 Hari Terakhir</button>
+            </div>
+            
+            <div class="p-4">
+                <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-[9px] text-left">
+                        <thead class="bg-slate-100 text-slate-600 uppercase font-bold">
+                            <tr>
+                                <th class="p-2 border-b">Tgl</th>
+                                <th class="p-2 border-b">Paddock</th>
+                                <th class="p-2 border-b">Ket</th>
+                                <th class="p-2 border-b text-center">Dur</th>
+                                <th class="p-2 border-b text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-slate-700 font-medium">
+                            </tbody>
+                    </table>
+                </div>
+                <p id="loadingText" class="text-center text-[8px] text-slate-400 mt-2 uppercase tracking-widest">Memperbarui Data...</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 p-6 shadow-inner">
+            <h3 class="text-center text-white text-[10px] font-black tracking-[0.4em] mb-4 opacity-40 uppercase italic underline decoration-blue-500">Panel Kontrol Admin</h3>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
+                        <label class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Mulai</label>
+                        <input type="date" id="tglMulai" class="w-full bg-transparent text-white text-xs font-bold outline-none">
+                    </div>
+                    <div class="bg-slate-800 p-2 rounded-xl border border-slate-700">
+                        <label class="block text-[8px] font-bold text-slate-500 uppercase mb-1">Selesai</label>
+                        <input type="date" id="tglSelesai" class="w-full bg-transparent text-white text-xs font-bold outline-none">
+                    </div>
+                </div>
+
+                <button onclick="downloadExcelKalender()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-black text-[10px] shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
+                    📂 UNDUH EXCEL (PILIH TANGGAL)
+                </button>
+                
+                <button onclick="copyAllToday()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-[10px] active:scale-95 transition-all">
+                    📋 SALIN REKAP HARI INI (WA)
+                </button>
             </div>
         </div>
     </div>
@@ -90,13 +137,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let lastReport = ""; 
-        let jamMulai, jamSelesai;
+        let currentTab = 'hari';
+        let jamMulai, jamSelesai, lastReport;
 
         window.onload = () => {
             const savedName = localStorage.getItem('namaPetugas');
             if(savedName) document.getElementById('petugas').value = savedName;
-            monitorRealtime();
+            switchTab('hari');
         };
 
         function saveName() { localStorage.setItem('namaPetugas', document.getElementById('petugas').value); }
@@ -104,105 +151,122 @@
         function startHujan() {
             jamMulai = new Date();
             document.getElementById('displayStart').innerText = jamMulai.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById('btnStart').disabled = true; document.getElementById('btnStart').classList.add('opacity-20');
-            document.getElementById('btnStop').disabled = false; document.getElementById('btnStop').classList.remove('opacity-20');
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            document.getElementById('btnStop').classList.remove('opacity-20');
         }
 
         function stopHujan() {
             jamSelesai = new Date();
             document.getElementById('displayStop').innerText = jamSelesai.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById('btnStop').disabled = true; document.getElementById('btnStop').classList.add('opacity-20');
+            document.getElementById('btnStop').disabled = true;
         }
 
-        // FUNGSI SALIN BARU (TANPA ERROR)
-        function secureCopy(text) {
-            const tempBox = document.getElementById('tempBox');
-            tempBox.value = text;
-            tempBox.select();
-            tempBox.setSelectionRange(0, 99999);
-            try {
-                document.execCommand('copy');
-                alert("✅ Berhasil Disalin!");
-            } catch (err) {
-                window.prompt("Salin manual teks ini:", text);
-            }
+        function switchTab(type) {
+            currentTab = type;
+            document.getElementById('tabHari').className = type === 'hari' ? 'flex-1 py-3 tab-active' : 'flex-1 py-3';
+            document.getElementById('tabMinggu').className = type === 'minggu' ? 'flex-1 py-3 tab-active' : 'flex-1 py-3';
+            renderTable();
+        }
+
+        function renderTable() {
+            const tglSekarang = new Date().toLocaleDateString('id-ID');
+            db.collection("data_hujan").onSnapshot(snap => {
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = "";
+                let dataArr = [];
+                snap.forEach(doc => dataArr.push({ id: doc.id, ...doc.data() }));
+
+                if (currentTab === 'hari') {
+                    dataArr = dataArr.filter(d => d.tanggal === tglSekarang);
+                } else {
+                    const tujuhHariLalu = new Date();
+                    tujuhHariLalu.setDate(tujuhHariLalu.getDate() - 7);
+                    dataArr = dataArr.filter(d => {
+                        const [t, b, y] = d.tanggal.split('/');
+                        return new Date(`${y}-${b}-${t}`) >= tujuhHariLalu;
+                    });
+                }
+
+                dataArr.sort((a,b) => b.timestamp - a.timestamp);
+                dataArr.forEach(d => {
+                    tbody.innerHTML += `
+                        <tr class="border-b">
+                            <td class="p-2 font-mono text-[8px] opacity-60">${d.tanggal.split('/')[0]}/${d.tanggal.split('/')[1]}</td>
+                            <td class="p-2 font-black">${d.paddock}</td>
+                            <td class="p-2 text-blue-600 font-bold">${d.keterangan.charAt(0)}</td>
+                            <td class="p-2 text-center">${d.durasi_menit}m</td>
+                            <td class="p-2 text-center"><button onclick="hapusData('${d.id}')" class="text-rose-500 font-black px-2">X</button></td>
+                        </tr>
+                    `;
+                });
+                if(dataArr.length === 0) tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Kosong</td></tr>`;
+                document.getElementById('loadingText').innerText = `SERVER: ${dataArr.length} DATA TERMUAT`;
+            });
         }
 
         async function kirimData() {
             const petugas = document.getElementById('petugas').value;
             const paddock = document.getElementById('paddock').value;
             const intensitas = document.querySelector('input[name="intensitas"]:checked')?.value;
-            if (!petugas || !paddock || !jamMulai || !jamSelesai || !intensitas) return alert("Lengkapi data!");
+            if (!petugas || !paddock || !jamMulai || !jamSelesai || !intensitas) return alert("Lengkapi Data!");
 
             const durasi = Math.round((jamSelesai - jamMulai) / 60000);
             const tgl = new Date().toLocaleDateString('id-ID');
 
-            try {
-                await db.collection("data_hujan").add({
-                    petugas, paddock, keterangan: intensitas, durasi_menit: durasi,
-                    jam_mulai: jamMulai.toLocaleTimeString('id-ID'),
-                    jam_selesai: jamSelesai.toLocaleTimeString('id-ID'),
-                    tanggal: tgl,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                lastReport = `*LAPORAN HUJAN*\n👤: ${petugas}\n📍: ${paddock}\n🌦️: ${intensitas}\n⏱️: ${durasi} Menit\n📅: ${tgl}`;
-                document.getElementById('copySection').classList.remove('hidden');
-                alert("✅ Tersimpan!");
-            } catch (e) { alert("Error: " + e.message); }
+            await db.collection("data_hujan").add({
+                petugas, paddock, keterangan: intensitas, durasi_menit: durasi,
+                jam_mulai: jamMulai.toLocaleTimeString('id-ID'), jam_selesai: jamSelesai.toLocaleTimeString('id-ID'),
+                tanggal: tgl, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            lastReport = `*LAPORAN HUJAN*\n👤: ${petugas}\n📍: ${paddock}\n🌦️: ${intensitas}\n⏱️: ${durasi}m\n📅: ${tgl}`;
+            document.getElementById('copySection').classList.remove('hidden');
+            alert("✅ Tersimpan!");
+            document.getElementById('paddock').value = "";
         }
 
-        function copySingle() { secureCopy(lastReport); setTimeout(() => location.reload(), 1000); }
+        async function hapusData(id) {
+            if(confirm("Hapus data?")) await db.collection("data_hujan").doc(id).delete();
+        }
 
-        // FUNGSI SALIN SEMUA DATA (VERSI STABIL TANPA INDEX)
+        function secureCopy(text) {
+            const box = document.getElementById('tempBox');
+            box.value = text; box.select(); document.execCommand('copy'); alert("📋 Disalin ke Clipboard!");
+        }
+
         async function copyAllToday() {
             const tgl = new Date().toLocaleDateString('id-ID');
-            // Menghapus 'orderBy' agar tidak butuh index Firebase
-            const snapshot = await db.collection("data_hujan").where("tanggal", "==", tgl).get();
-
-            if (snapshot.empty) return alert("Belum ada data hari ini.");
-
-            let rawData = [];
-            snapshot.forEach(doc => rawData.push(doc.data()));
-            
-            // Urutkan manual berdasarkan waktu mulai (A-Z)
-            rawData.sort((a, b) => a.jam_mulai.localeCompare(b.jam_mulai));
-
-            let teksFull = `*REKAP MONITORING HUJAN HARI INI*\nTanggal: ${tgl}\n----------------------------\n`;
-            rawData.forEach((d, i) => {
-                teksFull += `${i+1}. *${d.paddock}* | ${d.keterangan} | ${d.durasi_menit}m (${d.jam_mulai}-${d.jam_selesai}) - _${d.petugas}_\n`;
-            });
-            teksFull += `\n----------------------------\n_Total: ${snapshot.size} Kejadian_`;
-            secureCopy(teksFull);
+            const snap = await db.collection("data_hujan").where("tanggal", "==", tgl).get();
+            let teks = `*REKAP HUJAN (${tgl})*\n------------------\n`;
+            snap.forEach((doc, i) => { const d = doc.data(); teks += `${i+1}. ${d.paddock} | ${d.keterangan} | ${d.durasi_menit}m\n`; });
+            secureCopy(teks);
         }
 
-        function monitorRealtime() {
-            const tgl = new Date().toLocaleDateString('id-ID');
-            db.collection("data_hujan").where("tanggal", "==", tgl)
-              .onSnapshot(snap => {
-                  document.getElementById('statHariIni').innerText = `SERVER: ${snap.size} LAPORAN HARI INI`;
-              });
-        }
+        async function downloadExcelKalender() {
+            const mRaw = document.getElementById('tglMulai').value;
+            const sRaw = document.getElementById('tglSelesai').value;
+            if(!mRaw || !sRaw) return alert("Pilih tanggal di kalender!");
 
-        async function downloadExcelRange() {
-            const mulai = prompt("Unduh dari tanggal (DD/MM/YYYY):", new Date().toLocaleDateString('id-ID'));
-            const selesai = prompt("Sampai tanggal (DD/MM/YYYY):", new Date().toLocaleDateString('id-ID'));
-            if(!mulai || !selesai) return;
+            const fmt = (s) => { const [y,m,d] = s.split('-'); return `${parseInt(d)}/${parseInt(m)}/${y}`; };
+            const tMulai = fmt(mRaw); const tSelesai = fmt(sRaw);
 
-            const snapshot = await db.collection("data_hujan").get();
-            let dataArr = [];
-            snapshot.forEach(doc => {
-                let d = doc.data();
-                if (d.tanggal >= mulai && d.tanggal <= selesai) {
-                    dataArr.push({ Tanggal: d.tanggal, Paddock: d.paddock, Intensitas: d.keterangan, Durasi: d.durasi_menit, Mulai: d.jam_mulai, Selesai: d.jam_selesai, Petugas: d.petugas });
-                }
+            const snap = await db.collection("data_hujan").get();
+            let arr = [];
+            snap.forEach(doc => { 
+                let d = doc.data(); 
+                // Filter sederhana rentang tanggal
+                if(d.tanggal >= tMulai && d.tanggal <= tSelesai) arr.push(d); 
             });
-            if(dataArr.length === 0) return alert("Data kosong.");
-            dataArr.sort((a,b) => a.Tanggal.localeCompare(b.Tanggal));
-            const ws = XLSX.utils.json_to_sheet(dataArr);
+
+            if(arr.length === 0) return alert("Data tidak ditemukan.");
+            const ws = XLSX.utils.json_to_sheet(arr);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Laporan");
-            XLSX.writeFile(wb, `Laporan_Hujan_${mulai.replace(/\//g,'-')}.xlsx`);
+            XLSX.writeFile(wb, `Rekap_Hujan_${mRaw}_sd_${sRaw}.xlsx`);
         }
+
+        function copySingle() { secureCopy(lastReport); setTimeout(()=>location.reload(), 800); }
     </script>
 </body>
 </html>
