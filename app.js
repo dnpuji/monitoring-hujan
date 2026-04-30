@@ -89,7 +89,10 @@ function renderMasterList(containerId, snapshot, collectionName) {
         container.innerHTML += `
             <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2">
                 <span class="text-xs font-bold text-slate-700">${doc.data().nama}</span>
-                <button onclick="deleteMaster('${collectionName}', '${doc.id}')" class="text-red-500 font-bold text-xs p-1">Hapus</button>
+                <div>
+                    <button onclick="editMaster('${collectionName}', '${doc.id}', '${doc.data().nama}')" class="text-blue-500 font-bold text-xs p-1 mr-2">Edit</button>
+                    <button onclick="deleteMaster('${collectionName}', '${doc.id}')" class="text-red-500 font-bold text-xs p-1">Hapus</button>
+                </div>
             </div>
         `;
     });
@@ -106,6 +109,14 @@ async function addMaster(type, inputId) {
 async function deleteMaster(collection, id) {
     if (confirm("Hapus data master ini?")) {
         await db.collection(collection).doc(id).delete();
+        loadMasterData();
+    }
+}
+
+async function editMaster(collection, id, currentName) {
+    const newName = prompt("Edit nama:", currentName);
+    if (newName !== null && newName.trim() !== "" && newName !== currentName) {
+        await db.collection(collection).doc(id).update({ nama: newName.trim() });
         loadMasterData();
     }
 }
@@ -277,9 +288,16 @@ function renderHistoryTable() {
                     <td class="p-2 text-[10px] font-mono leading-tight">${d.jam_mulai}<br><span class="text-rose-400">s/d</span><br>${d.jam_selesai}</td>
                     <td class="p-2 text-xs font-bold">${icon} ${d.kegiatan}<br><span class="text-[9px] text-slate-400 font-normal">Pad: ${d.paddock} | ${d.keterangan}</span></td>
                     <td class="p-2 text-center font-mono font-black text-blue-700 text-xs">${d.durasi}</td>
+                    <td class="p-2 text-center"><button onclick="deleteRecord('${d.id}')" class="text-red-500 font-bold text-xs bg-red-50 rounded px-2 py-1">X</button></td>
                 </tr>`;
         });
     });
+}
+
+async function deleteRecord(id) {
+    if (confirm("Hapus data record ini?")) {
+        await db.collection("spray_analytics_v12").doc(id).delete();
+    }
 }
 
 // Dashboard Real-time
@@ -359,4 +377,80 @@ function renderChart() {
             }
         });
     });
+}
+
+// Download CSV Logic
+async function downloadCSV() {
+    const startInput = document.getElementById('filter_start').value;
+    const endInput = document.getElementById('filter_end').value;
+    const pengawasInput = document.getElementById('filter_pengawas').value.trim();
+
+    let query = db.collection("spray_analytics_v12");
+    
+    const snap = await query.get();
+    let data = [];
+
+    const parseDateStr = (str) => {
+        const parts = str.split('/');
+        if(parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+        return new Date(str); 
+    };
+
+    const startD = startInput ? new Date(startInput) : null;
+    const endD = endInput ? new Date(endInput) : null;
+    if(startD) startD.setHours(0,0,0,0);
+    if(endD) endD.setHours(23,59,59,999);
+
+    snap.forEach(doc => {
+        const d = doc.data();
+        let include = true;
+        
+        if (startD || endD) {
+            const rowDate = parseDateStr(d.tanggal);
+            if (startD && rowDate < startD) include = false;
+            if (endD && rowDate > endD) include = false;
+        }
+
+        if (pengawasInput && pengawasInput !== "" && d.pengawas !== pengawasInput) {
+            include = false;
+        }
+
+        if (include) {
+            data.push(d);
+        }
+    });
+
+    if (data.length === 0) {
+        alert("Tidak ada data yang sesuai dengan filter.");
+        return;
+    }
+
+    data.sort((a,b) => b.timestamp - a.timestamp);
+
+    const headers = ["Tanggal", "Jam_Mulai", "Jam_Selesai", "Durasi", "Durasi_Menit", "Paddock", "Kegiatan", "Pengawas", "Tipe_Kendala", "Keterangan"];
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+
+    data.forEach(row => {
+        const rowArr = [
+            `"${row.tanggal}"`,
+            `"${row.jam_mulai}"`,
+            `"${row.jam_selesai}"`,
+            `"${row.durasi}"`,
+            row.durasi_menit,
+            `"${row.paddock}"`,
+            `"${row.kegiatan}"`,
+            `"${row.pengawas}"`,
+            `"${row.tipe}"`,
+            `"${row.keterangan}"`
+        ];
+        csvContent += rowArr.join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Laporan_Kendala_Spray_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
