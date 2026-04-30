@@ -3,251 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spray Tracker v11 - Merauke</title>
+    <title>Spray Tracker v12 - PWA</title>
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        .active-radio:checked + span { background-color: #1d4ed8; color: white; }
-        .tab-active { background-color: #1d4ed8 !important; color: white !important; font-weight: 900; }
-        .rekap-active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: 900; }
-        .locked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-    </style>
-</head>
-<body class="bg-slate-50 min-h-screen p-3 pb-10">
-
-    <div class="max-w-md mx-auto bg-white rounded-[2.5rem] shadow-2xl border-t-[12px] border-blue-700 overflow-hidden">
-        
-        <div class="p-6 pb-2 text-center">
-            <h2 class="text-xl font-black text-blue-900 uppercase">Spray Productivity Tracker</h2>
-            <p class="text-[8px] text-slate-400 font-bold tracking-[0.3em] mt-1 uppercase">Sistem Kunci & Timestamp v11</p>
-            
-            <div class="grid grid-cols-2 gap-2 mt-6">
-                <input type="text" id="petugas" oninput="savePersist()" class="bg-slate-100 border-2 border-transparent focus:border-blue-500 rounded-xl p-3 font-bold text-xs outline-none transition-all" placeholder="Petugas">
-                <input type="text" id="paddock" oninput="savePersist()" class="bg-slate-100 border-2 border-transparent focus:border-blue-500 rounded-xl p-3 font-bold text-xs outline-none transition-all" placeholder="Paddock">
-            </div>
-        </div>
-
-        <div class="px-6">
-            <div id="menuContainer" class="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 mb-4">
-                <button onclick="switchMode('hujan')" id="mHujan" class="flex-1 py-3 rounded-xl text-[8px] font-black uppercase tab-active transition-all">🌦️ Hujan</button>
-                <button onclick="switchMode('angin')" id="mAngin" class="flex-1 py-3 rounded-xl text-[8px] font-black uppercase transition-all">💨 Angin</button>
-                <button onclick="switchMode('tunggu')" id="mTunggu" class="flex-1 py-3 rounded-xl text-[8px] font-black uppercase transition-all">⏳ Lainnya</button>
-            </div>
-
-            <div class="bg-slate-900 p-6 rounded-[2rem] text-center mb-6 shadow-xl relative overflow-hidden">
-                <p id="timerDisplay" class="text-5xl font-black text-emerald-400 font-mono tracking-tighter">00:00:00</p>
-                <p id="timerLabel" class="text-[9px] font-bold text-slate-500 uppercase mt-2 italic">Monitoring Siap</p>
-                <p id="startTimeLabel" class="text-[8px] text-slate-600 mt-1 font-mono uppercase italic">--:--:--</p>
-                
-                <div class="grid grid-cols-2 gap-4 mt-6">
-                    <button onclick="startTimer()" id="btnStart" class="bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all">▶ START</button>
-                    <button onclick="stopTimer()" id="btnStop" class="bg-rose-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg opacity-20 transition-all" disabled>■ STOP</button>
-                </div>
-            </div>
-
-            <div id="inputHujan" class="space-y-4">
-                <div class="grid grid-cols-3 gap-2">
-                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Ringan" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Ringan</span></label>
-                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Sedang" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Sedang</span></label>
-                    <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Lebat" class="hidden active-radio"><span class="block text-center p-3 border-2 border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase transition-all">Lebat</span></label>
-                </div>
-            </div>
-
-            <div id="inputAngin" class="hidden bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-center justify-between">
-                <span class="text-[9px] font-black text-amber-600 uppercase">Kec. Angin Max</span>
-                <div class="flex items-center gap-1">
-                    <input type="number" id="windSpeed" step="0.1" class="w-16 bg-white border-b-2 border-amber-500 text-center font-black text-lg outline-none" placeholder="0.0">
-                    <span class="text-[9px] font-bold uppercase">Km/jam</span>
-                </div>
-            </div>
-
-            <div id="inputTunggu" class="hidden">
-                <input type="text" id="customReason" class="w-full bg-slate-100 border-2 border-slate-200 rounded-xl p-3 font-bold text-xs outline-none" placeholder="Ketik alasan standby lainnya...">
-            </div>
-
-            <button onclick="saveData()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black text-xs mt-6 shadow-xl uppercase tracking-widest active:scale-95 transition-all">Simpan Laporan & Reset</button>
-        </div>
-
-        <div class="bg-slate-50 border-t border-slate-200 mt-8 p-4">
-            <div class="flex text-[9px] font-black uppercase text-slate-400 border-b mb-3">
-                <button onclick="switchRekap('hari')" id="rkHari" class="flex-1 py-2 rekap-active">Data Hari Ini</button>
-                <button onclick="switchRekap('minggu')" id="rkMinggu" class="flex-1 py-2">Rekap Mingguan</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-[9px] text-left">
-                    <thead class="text-slate-400 uppercase">
-                        <tr>
-                            <th class="p-2">Waktu (Mulai-Stop)</th>
-                            <th class="p-2">Kendala</th>
-                            <th class="p-2 text-center">Durasi</th>
-                            <th class="p-2 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="font-medium text-slate-700"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="bg-slate-900 p-6">
-            <button onclick="downloadExcel()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">📂 Export Laporan Analisis (.xlsx)</button>
-        </div>
-    </div>
-
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyALY1vj0Qp93fY0jYd3D7MFseJn24cyV9E",
-            authDomain: "monitoring-hujan-27a0e.firebaseapp.com",
-            projectId: "monitoring-hujan-27a0e",
-            storageBucket: "monitoring-hujan-27a0e.firebasestorage.app",
-            messagingSenderId: "864443661330",
-            appId: "1:864443661330:web:41d987b7a412bb9fb12ccb"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let currentMode = 'hujan', timerInterval, rekapTab = 'hari';
-
-        window.onload = () => {
-            document.getElementById('petugas').value = localStorage.getItem('spray_petugas') || "";
-            document.getElementById('paddock').value = localStorage.getItem('spray_paddock') || "";
-            checkRunningTimer();
-            renderTable();
-        };
-
-        function savePersist() {
-            localStorage.setItem('spray_petugas', document.getElementById('petugas').value);
-            localStorage.setItem('spray_paddock', document.getElementById('paddock').value);
-        }
-
-        function switchMode(mode) {
-            // Cek apakah timer sedang berjalan
-            if(localStorage.getItem('spray_timer_start')) return; 
-
-            currentMode = mode;
-            document.getElementById('inputHujan').classList.toggle('hidden', mode !== 'hujan');
-            document.getElementById('inputAngin').classList.toggle('hidden', mode !== 'angin');
-            document.getElementById('inputTunggu').classList.toggle('hidden', mode !== 'tunggu');
-            
-            ['mHujan','mAngin','mTunggu'].forEach(m => document.getElementById(m).classList.remove('tab-active'));
-            document.getElementById('m' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('tab-active');
-            
-            const labels = { hujan: 'Lama Waktu Hujan', angin: 'Lama Angin Kencang', tunggu: 'Waktu Standby Lainnya' };
-            document.getElementById('timerLabel').innerText = labels[mode];
-        }
-
-        function startTimer() {
-            const now = Date.now();
-            localStorage.setItem('spray_timer_start', now);
-            localStorage.setItem('spray_timer_mode', currentMode);
-            updateTimerUI(true);
-            runTimerDisplay(now);
-        }
-
-        function checkRunningTimer() {
-            const savedStart = localStorage.getItem('spray_timer_start');
-            if(savedStart) {
-                const mode = localStorage.getItem('spray_timer_mode');
-                switchMode(mode);
-                updateTimerUI(true);
-                runTimerDisplay(parseInt(savedStart));
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#1d4ed8', secondary: '#3b82f6' }
+                }
             }
         }
-
-        function runTimerDisplay(startTime) {
-            document.getElementById('startTimeLabel').innerText = "Mulai: " + new Date(startTime).toLocaleTimeString('id-ID');
-            document.getElementById('menuContainer').classList.add('locked'); // KUNCI MENU
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const diff = Date.now() - startTime;
-                const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-                const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-                const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-                document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            localStorage.setItem('spray_timer_end', Date.now());
-            updateTimerUI(false);
-            document.getElementById('menuContainer').classList.remove('locked'); // BUKA KUNCI
-        }
-
-        function updateTimerUI(running) {
-            document.getElementById('btnStart').disabled = running;
-            document.getElementById('btnStart').classList.toggle('opacity-20', running);
-            document.getElementById('btnStop').disabled = !running;
-            document.getElementById('btnStop').classList.toggle('opacity-20', !running);
-        }
-
-        async function saveData() {
-            const pet = document.getElementById('petugas').value;
-            const pad = document.getElementById('paddock').value;
-            const start = localStorage.getItem('spray_timer_start');
-            const end = localStorage.getItem('spray_timer_end');
-            
-            if(!pet || !pad || !start || !end) return alert("Lengkapi Identitas & Stop Timer!");
-
-            const durasiFinal = document.getElementById('timerDisplay').innerText;
-            const startT = new Date(parseInt(start)).toLocaleTimeString('id-ID');
-            const endT = new Date(parseInt(end)).toLocaleTimeString('id-ID');
-
-            let detail = "";
-            if(currentMode === 'hujan') detail = document.querySelector('input[name="ketHujan"]:checked')?.value || "Hujan";
-            else if(currentMode === 'angin') detail = (document.getElementById('windSpeed').value || "0") + " Km/jam";
-            else detail = document.getElementById('customReason').value || "Lainnya";
-
-            await db.collection("spray_analytics_v11").add({
-                petugas: pet, paddock: pad, durasi: durasiFinal, tipe: currentMode, keterangan: detail,
-                jam_mulai: startT,
-                jam_selesai: endT,
-                tanggal: new Date(parseInt(start)).toLocaleDateString('id-ID'),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            localStorage.removeItem('spray_timer_start');
-            localStorage.removeItem('spray_timer_end');
-            alert("Laporan Tersimpan!");
-            location.reload();
-        }
-
-        function renderTable() {
-            const tglSkrg = new Date().toLocaleDateString('id-ID');
-            db.collection("spray_analytics_v11").onSnapshot(snap => {
-                const tbody = document.getElementById('tableBody'); tbody.innerHTML = "";
-                let arr = []; snap.forEach(doc => arr.push({id: doc.id, ...doc.data()}));
-                if(rekapTab === 'hari') arr = arr.filter(d => d.tanggal === tglSkrg);
-                arr.sort((a,b) => b.timestamp - a.timestamp);
-                arr.forEach(d => {
-                    const icon = d.tipe === 'hujan' ? '🌦️' : d.tipe === 'angin' ? '💨' : '⏳';
-                    tbody.innerHTML += `
-                        <tr class="border-b border-slate-100">
-                            <td class="p-2 text-[8px] font-mono leading-tight">${d.jam_mulai}<br><span class="text-rose-400">s/d</span><br>${d.jam_selesai}</td>
-                            <td class="p-2 font-bold">${icon} ${d.keterangan}<br><span class="text-[7px] text-slate-400">Pad: ${d.paddock}</span></td>
-                            <td class="p-2 text-center font-mono font-black text-blue-700">${d.durasi}</td>
-                            <td class="p-2 text-center"><button onclick="hapus('${d.id}')" class="text-rose-400 font-black px-2">X</button></td>
-                        </tr>`;
-                });
-            });
-        }
-
-        async function hapus(id) { if(confirm("Hapus data ini?")) await db.collection("spray_analytics_v11").doc(id).delete(); }
-        function switchRekap(t) { rekapTab = t; ['rkHari','rkMinggu'].forEach(r => document.getElementById(r).classList.remove('rekap-active')); document.getElementById('rk' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('rekap-active'); renderTable(); }
-
-        async function downloadExcel() {
-            const snap = await db.collection("spray_analytics_v11").get();
-            let arr = []; snap.forEach(doc => {
-                const d = doc.data();
-                arr.push({ Tanggal: d.tanggal, Jam_Mulai: d.jam_mulai, Jam_Selesai: d.jam_selesai, Durasi_Total: d.durasi, Paddock: d.paddock, Petugas: d.petugas, Tipe_Kendala: d.tipe, Detail_Kendala: d.keterangan });
-            });
-            const ws = XLSX.utils.json_to_sheet(arr);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Spray_Loss_Report");
-            XLSX.writeFile(wb, "Analisis_Produktivitas_Spray_V11.xlsx");
-        }
     </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .active-radio:checked + span { background-color: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3); }
+        .tab-active { background-color: #1e293b !important; color: white !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .locked { opacity: 0.5; pointer-events: none; filter: grayscale(50%); }
+        
+        /* Bottom Nav Transition */
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:active { transform: scale(0.9); }
+    </style>
+</head>
+<body class="min-h-screen pb-24 text-slate-800">
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 rounded-b-[2rem] shadow-lg sticky top-0 z-40">
+        <h1 class="text-2xl font-black tracking-tight">SPRAY TRACKER</h1>
+        <p class="text-[10px] font-bold text-blue-200 uppercase tracking-widest mt-1">Sistem Cerdas Real-Time</p>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto relative z-10 -mt-4">
+        
+        <!-- ================= TRACKER SECTION ================= -->
+        <section id="tracker-section" class="space-y-4 transition-all duration-300">
+            <!-- Form Card -->
+            <div id="formContainer" class="glass rounded-3xl p-5 shadow-xl transition-all">
+                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 border-b pb-2">Pengaturan Tugas</h2>
+                
+                <div class="space-y-3">
+                    <div class="relative">
+                        <label class="text-[10px] font-bold text-slate-400 absolute top-2 left-3">PENGKAJI / MANDOR</label>
+                        <input list="list_pengawas" type="text" id="pengawas" oninput="savePersist()" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl pt-6 pb-2 px-3 font-bold text-sm outline-none transition-all" placeholder="Pilih atau Ketik...">
+                        <datalist id="list_pengawas"></datalist>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute top-2 left-3">PADDOCK</label>
+                            <input list="list_paddock" type="text" id="paddock" oninput="savePersist()" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl pt-6 pb-2 px-3 font-bold text-sm outline-none" placeholder="Pilih...">
+                            <datalist id="list_paddock"></datalist>
+                        </div>
+                        <div class="relative">
+                            <label class="text-[10px] font-bold text-slate-400 absolute top-2 left-3">KEGIATAN</label>
+                            <input list="list_kegiatan" type="text" id="kegiatan" oninput="savePersist()" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl pt-6 pb-2 px-3 font-bold text-sm outline-none" placeholder="Pilih...">
+                            <datalist id="list_kegiatan"></datalist>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 mt-5">
+                    <button onclick="switchMode('hujan')" id="mHujan" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase tab-active transition-all">🌦️ Hujan</button>
+                    <button onclick="switchMode('angin')" id="mAngin" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase transition-all text-slate-500">💨 Angin</button>
+                    <button onclick="switchMode('tunggu')" id="mTunggu" class="flex-1 py-2 rounded-lg text-[9px] font-black uppercase transition-all text-slate-500">⏳ Lainnya</button>
+                </div>
+
+                <!-- Kendala Options -->
+                <div class="mt-4">
+                    <div id="inputHujan" class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Ringan" class="hidden active-radio"><span class="block text-center p-2 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase transition-all">Ringan</span></label>
+                        <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Sedang" class="hidden active-radio" checked><span class="block text-center p-2 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase transition-all">Sedang</span></label>
+                        <label class="cursor-pointer"><input type="radio" name="ketHujan" value="Lebat" class="hidden active-radio"><span class="block text-center p-2 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-500 uppercase transition-all">Lebat</span></label>
+                    </div>
+
+                    <div id="inputAngin" class="hidden bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-amber-600 uppercase">Kecepatan Max</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="windSpeed" step="0.1" class="w-16 bg-transparent border-b-2 border-amber-400 text-center font-black text-lg outline-none text-amber-800" placeholder="0">
+                            <span class="text-[9px] font-bold uppercase text-amber-600">Km/j</span>
+                        </div>
+                    </div>
+
+                    <div id="inputTunggu" class="hidden">
+                        <input type="text" id="customReason" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-bold text-xs outline-none" placeholder="Tulis alasan standby...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Card -->
+            <div class="bg-slate-900 rounded-3xl p-6 text-center shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-500 opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-emerald-500 opacity-10 rounded-full blur-2xl"></div>
+                
+                <p id="timerDisplay" class="text-5xl font-black text-white font-mono tracking-tighter drop-shadow-lg">00:00:00</p>
+                <p id="timerLabel" class="text-[10px] font-bold text-slate-400 uppercase mt-2">Menunggu Dimulai</p>
+                <p id="startTimeLabel" class="text-[9px] text-slate-500 mt-1 font-mono uppercase bg-slate-800 inline-block px-2 py-1 rounded-full">--:--:--</p>
+                
+                <div class="mt-6 flex justify-center">
+                    <button onclick="startTimer()" id="btnStart" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-4 rounded-2xl font-black text-sm shadow-[0_4px_20px_rgba(16,185,129,0.4)] transition-all">▶ MULAI RECORDING</button>
+                    <button onclick="stopTimer()" id="btnStop" class="w-full bg-rose-500 text-white py-4 rounded-2xl font-black text-sm shadow-[0_4px_20px_rgba(244,63,94,0.4)] hidden transition-all animate-pulse">■ STOP RECORDING</button>
+                </div>
+            </div>
+
+            <button onclick="saveData()" id="btnSave" class="w-full bg-white border-2 border-blue-600 text-blue-700 py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest active:scale-95 transition-all">💾 Simpan Data ke Server</button>
+
+            <!-- History Hari Ini -->
+            <div class="mt-6">
+                <h3 class="text-xs font-bold text-slate-500 uppercase mb-3 px-2">History Hari Ini</h3>
+                <div class="bg-white rounded-2xl p-2 shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <tbody id="tableBody" class="divide-y divide-slate-100">
+                            <!-- Diisi oleh JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DASHBOARD SECTION ================= -->
+        <section id="dashboard-section" class="hidden space-y-6 transition-all duration-300">
+            
+            <div class="glass rounded-3xl p-5 shadow-lg">
+                <h2 class="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    AKTIVITAS SAAT INI
+                </h2>
+                <div id="active-users-container" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                    <p class="text-xs text-slate-400 text-center py-4">Memuat data...</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-3xl p-5 shadow-lg">
+                <h2 class="text-sm font-black text-slate-800 mb-4">📈 GRAFIK KENDALA</h2>
+                <div class="bg-white p-2 rounded-xl border border-slate-100">
+                    <canvas id="productivityChart" height="200"></canvas>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- ================= MASTER DATA SECTION ================= -->
+        <section id="master-section" class="hidden space-y-4 transition-all duration-300">
+            
+            <!-- Paddock -->
+            <div class="glass rounded-2xl p-4 shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black text-slate-700 uppercase mb-2">Master Paddock</h3>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="inp_paddock" class="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" placeholder="Tambah paddock...">
+                    <button onclick="addMaster('paddock', 'inp_paddock')" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">+</button>
+                </div>
+                <div id="m_paddock_list" class="max-h-40 overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- Pengawas -->
+            <div class="glass rounded-2xl p-4 shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black text-slate-700 uppercase mb-2">Master Pengawas</h3>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="inp_pengawas" class="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" placeholder="Tambah pengawas...">
+                    <button onclick="addMaster('pengawas', 'inp_pengawas')" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">+</button>
+                </div>
+                <div id="m_pengawas_list" class="max-h-40 overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- Kegiatan -->
+            <div class="glass rounded-2xl p-4 shadow-sm border border-slate-200">
+                <h3 class="text-xs font-black text-slate-700 uppercase mb-2">Master Kegiatan</h3>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="inp_kegiatan" class="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" placeholder="Tambah kegiatan...">
+                    <button onclick="addMaster('kegiatan', 'inp_kegiatan')" class="bg-blue-600 text-white px-4 rounded-lg text-xs font-bold">+</button>
+                </div>
+                <div id="m_kegiatan_list" class="max-h-40 overflow-y-auto pr-1"></div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] pb-safe">
+        <div class="max-w-md mx-auto flex justify-around">
+            <button onclick="switchTab('tracker')" id="nav-tracker" class="nav-item flex-1 py-4 text-blue-600 flex flex-col items-center gap-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[9px] font-black uppercase">Tracker</span>
+            </button>
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item flex-1 py-4 text-slate-400 flex flex-col items-center gap-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span class="text-[9px] font-black uppercase">Dashboard</span>
+            </button>
+            <button onclick="switchTab('master')" id="nav-master" class="nav-item flex-1 py-4 text-slate-400 flex flex-col items-center gap-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                <span class="text-[9px] font-black uppercase">Master</span>
+            </button>
+        </div>
+    </nav>
+
+    <script src="./app.js"></script>
 </body>
 </html>
