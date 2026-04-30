@@ -1,5 +1,5 @@
 {
-  "name": "Spray Tracker v11",
+  "name": "Spray Tracker v12",
   "short_name": "Spray Tracker",
   "description": "Sistem monitoring produktivitas dan hambatan kegiatan spray di lapangan secara real-time.",
   "start_url": "./index.html",
@@ -8,7 +8,7 @@
   "theme_color": "#1d4ed8",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3233/3233515.png",
+      "src": "./logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }

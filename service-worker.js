@@ -1,9 +1,10 @@
-const CACHE_NAME = 'spray-tracker-v12';
+const CACHE_NAME = 'spray-tracker-v13';
 const urlsToCache = [
   './',
   './index.html',
   './app.js',
   './manifest.json',
+  './logo.png',
   'https://cdn.tailwindcss.com',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js',
@@ -35,7 +36,7 @@ self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     self.registration.showNotification(event.data.title, {
       body: event.data.body,
-      icon: 'https://cdn-icons-png.flaticon.com/512/3233/3233515.png',
+      icon: './logo.png',
       requireInteraction: true, // Keep it visible until user interacts
       tag: 'recording-status', // Prevent spamming, just update the existing one
       renotify: true
